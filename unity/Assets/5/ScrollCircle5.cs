@@ -1,14 +1,18 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class ScrollCircle5 : ScrollRect
 {
-    public float recoveryTime = 0.1f;
-    protected float mRadius;
-    protected bool isOnEndDrag = false;
-    protected Vector3 offsetVector3 = Vector3.zero;
+    public Action startDrag;
+    public Action<Vector3> dragging;
+    public Action endDrag;
+
+    private float recoveryTime = 0.1f;//值越大恢复越快
+    private float mRadius;
+    private bool isOnEndDrag = false;
+    private Vector3 offsetVector3 = Vector3.zero;
 
     void Start()
     {
@@ -18,9 +22,13 @@ public class ScrollCircle5 : ScrollRect
         mRadius = (transform as RectTransform).sizeDelta.x * 0.5f;
     }
 
+    public override void OnBeginDrag(PointerEventData eventData)
+    {
+        if (startDrag != null)
+            startDrag();
+    }
     public override void OnScroll(PointerEventData data)
     {
-
     }
     public override void OnDrag(PointerEventData eventData)
     {
@@ -32,6 +40,9 @@ public class ScrollCircle5 : ScrollRect
             contentPostion = contentPostion.normalized * mRadius;
             SetContentAnchoredPosition(contentPostion);
         }
+
+        if (dragging != null)
+            dragging(offsetVector3);
     }
 
     public override void OnEndDrag(PointerEventData eventData)
@@ -39,6 +50,8 @@ public class ScrollCircle5 : ScrollRect
         base.OnEndDrag(eventData);
         if (!isOnEndDrag)
             isOnEndDrag = true;
+        if (endDrag != null)
+            endDrag();
     }
 
     void Update()
@@ -68,13 +81,13 @@ public class ScrollCircle5 : ScrollRect
     {
         offsetVector3 = content.localPosition / mRadius;
     }
-    /// <summary>  
-    /// 获取偏移量大小  
-    /// 偏移量范围是[-1,1]  
-    /// </summary>  
-    /// <returns></returns>  
-    public Vector3 GetOffsetVector3()
-    {
-        return offsetVector3;
-    }
+    ///// <summary>  
+    ///// 获取偏移量大小  
+    ///// 偏移量范围是[-1,1]  
+    ///// </summary>  
+    ///// <returns></returns>  
+    //public Vector3 GetOffsetVector3()
+    //{
+    //    return offsetVector3;
+    //}
 }
